@@ -4,10 +4,24 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/server.js"
+    "start": "nodemon src/server.js",
+    "format": "prettier --write ."
   },
-  "keywords": ["backend", "nodejs"],
+   "repository": {
+    "type": "git",
+    "url": "https://github.com/priyanshu-369/beverage-distribution-webapplication.git"
+  },
+  "keywords": [
+    "backend",
+    "nodejs"
+  ],
   "author": "priyanshu gupta",
   "license": "ISC",
-  "description": "it is the backend for beverage distribution webapplication"
+  "description": "it is the backend for beverage distribution webapplication",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.16.2",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
 }

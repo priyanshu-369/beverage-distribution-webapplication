@@ -1,0 +1,73 @@
+# =========================
+# Node.js Dependencies
+# =========================
+node_modules/
+
+# ===============
+# npm Logs
+# ===============
+npm-debug.log
+
+# ============
+# IDE Config
+# ============
+.vscode/
+.idea/
+.editorconfig
+
+# ===========
+# OS Files
+# ===========
+.DS_Store
+Thumbs.db
+
+# ===
+# Logs
+# ===
+logs/
+*.log
+
+# =================
+# Environment Vars
+# =================
+.env
+
+# ===============
+# Build Directories
+# ===============
+build/
+dist/
+
+# ===============
+# TypeScript Output
+# ===============
+*.js.map
+
+# ============
+# React Output
+# ============
+public/build
+public/dist
+
+# ============
+# MongoDB Logs
+# ============
+mongod.log
+mongo.log
+
+# ============
+# Generic Files
+# ============
+*.tmp
+*.bak
+*.swp
+*~
+*.suo
+*.swn
+*.swo
+
+# ============
+# Yarn/Pnpm
+# ============
+.yarn/
+.pnpm-debug.log
