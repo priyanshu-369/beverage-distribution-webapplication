@@ -56,4 +56,4 @@ mongo.log
 *.suo
 *.swn
 *.swo
-.txt
+*.txt
