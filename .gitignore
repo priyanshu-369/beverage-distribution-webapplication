@@ -1,0 +1,59 @@
+# Node.js dependencies
+node_modules/
+
+# npm logs
+npm-debug.log
+
+# IDE/config files
+.vscode/
+.idea/
+.editorconfig
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+
+# Build/output directories
+build/
+dist/
+
+# TypeScript compilation output
+*.js.map
+
+# React-specific files
+public/build
+public/dist
+
+# MongoDB-specific files
+mongod.log
+mongo.log
+
+# Generic files to ignore
+*.tmp
+*.bak
+*.swp
+*~
+*.suo
+*.swn
+*.swo
+
+# Yarn/Pnpm-specific files
+.yarn/
+.pnpm-debug.log
+
+# Commit message files
+*.tmp
+*.bak
+*.swp
+*~
+*.suo
+*.swn
+*.swo
+.txt
