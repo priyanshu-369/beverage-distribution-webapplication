@@ -1,13 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/server.js",
     "format": "prettier --write ."
   },
-   "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/priyanshu-369/beverage-distribution-webapplication.git"
   },
@@ -19,8 +20,9 @@
   "license": "ISC",
   "description": "it is the backend for beverage distribution webapplication",
   "dependencies": {
+    "dotenv": "^17.2.0",
     "express": "^5.1.0",
-    "mongoose": "^8.16.2",
+    "mongoose": "^8.16.3",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2"
   }
