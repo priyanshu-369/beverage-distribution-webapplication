@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser"
 import errorHandler from "./middlewares/errorHandler.middleware.js"
+import cors from "cors"
 const app = express();
 
 
