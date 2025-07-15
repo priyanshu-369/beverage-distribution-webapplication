@@ -21,10 +21,12 @@ app.use(cookieParser())
 
 import userRouter from "./routes/user.route.js"
 
-app.use("beverage/api/v1/user", userRouter)
 
-
-
+app.use("/beverage/api/v1/user", userRouter)
+app.use("/beverage/api/v1/admin")
+app.use("/beverage/api/v1/staff")
+app.use("/beverage/api/v1/delivery-partner")
+ 
 
 
 app.use(errorHandler)
