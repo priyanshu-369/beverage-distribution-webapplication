@@ -96,5 +96,23 @@ const productSchema = new mongoose.Schema(
 )
 
 
-const Product = new mongoose.model("Product", productSchema)
+const Product = new mongoose.model("Product", productSchema);
+
+
+Product.methods.getAvailableStockForSale = function(){
+    return this.currentStockLevel - this.reservedStockLevel;
+}
+
+Product.methods.isStockBelowReorderPoint = function(){
+    return  this.getAvailableStockForSale() <= this.reorderPoint
+}
+
+Product.methods.getFormattedPrice = function(){
+    return `₹ ${this.basePrice}`
+}
+
+Product.methods.isSellable = function(){
+    return this.isAvailable && this.getAvailableStockForSale()
+}
+
 export default Product;
