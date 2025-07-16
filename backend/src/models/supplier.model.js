@@ -47,13 +47,12 @@ const supplierSchema = new mongoose.Schema(
     },
     {timestamps: true})
 
-const Supplier =  mongoose.model("Supplier", supplierSchema);
 
-Supplier.methods.getAverageLeadDays = function(){
+supplierSchema.methods.getAverageLeadDays = function(){
     return this.leadTimeDays;
 }
 
-Supplier.methods.getFormattedContactInfo = function(){
+supplierSchema.methods.getFormattedContactInfo = function(){
     let contactInfo = []
     if(this.email && this.email.trim() !== "") contactInfo.push(this.email);
     if(this.phoneNumber && this.phoneNumber.trim() !== "") contactInfo.push(this.phoneNumber);
@@ -63,7 +62,7 @@ Supplier.methods.getFormattedContactInfo = function(){
     return contactInfo.join(" | ");
 }
 
-Supplier.methods.getPaymentTermDescription = function(){
+supplierSchema.methods.getPaymentTermDescription = function(){
     let paymentTermsTemplate = {
         "NET 15": "payment due 15 days after invoice",
         "NET 30": "payment due 30 days after invoice",
@@ -75,9 +74,9 @@ Supplier.methods.getPaymentTermDescription = function(){
 
 }
 
-Supplier.methods.isSupplierActive = function(){
+supplierSchema.methods.isSupplierActive = function(){
     return this.isActive;
 }
 
-
+const Supplier =  mongoose.model("Supplier", supplierSchema);
 export default Supplier;

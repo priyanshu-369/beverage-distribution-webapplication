@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import aggregatePaginate from "mongoose-aggregate-paginate-v2"
 
 const userSchema = new mongoose.Schema(
     {
@@ -59,11 +60,9 @@ const userSchema = new mongoose.Schema(
     });
 
 
-
-const User = mongoose.model("User", userSchema);
-
+userSchema.plugin(aggregatePaginate)
 //ye middleware har bar call hoga koi document save hone se pehle user collection mein
-User.pre("save" ,async function(next){
+userSchema.pre("save" ,async function(next){
     if(!this.isModified("password")){
         return next()
     }
@@ -71,11 +70,11 @@ User.pre("save" ,async function(next){
     next()
 })
 
-User.methods.checkPassword = async function(password){
+userSchema.methods.checkPassword = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
-User.methods.generateAccessToken = function(){
+userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             id:this.id,
@@ -89,7 +88,7 @@ User.methods.generateAccessToken = function(){
     )
 }
 
-User.methods.generateRefreshToken = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             id: this.id,
@@ -102,4 +101,5 @@ User.methods.generateRefreshToken = function(){
     )
 }
 
+const User = mongoose.model("User", userSchema);
 export default User;

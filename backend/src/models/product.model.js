@@ -1,4 +1,6 @@
 import mongoose from "mongoose"
+import aggregatePaginate from "mongoose-aggregate-paginate-v2"
+
 
 const productSchema = new mongoose.Schema(
     {
@@ -96,23 +98,23 @@ const productSchema = new mongoose.Schema(
 )
 
 
-const Product =  mongoose.model("Product", productSchema);
+productSchema.plugin(aggregatePaginate)
 
-
-Product.methods.getAvailableStockForSale = function(){
+productSchema.methods.getAvailableStockForSale = function(){
     return this.currentStockLevel - this.reservedStockLevel;
 }
 
-Product.methods.isStockBelowReorderPoint = function(){
+productSchema.methods.isStockBelowReorderPoint = function(){
     return  this.getAvailableStockForSale() <= this.reorderPoint
 }
 
-Product.methods.getFormattedPrice = function(){
+productSchema.methods.getFormattedPrice = function(){
     return `₹ ${this.basePrice}`
 }
 
-Product.methods.isSellable = function(){
+productSchema.methods.isSellable = function(){
     return this.isAvailable && this.getAvailableStockForSale()
 }
 
+const Product =  mongoose.model("Product", productSchema);
 export default Product;
