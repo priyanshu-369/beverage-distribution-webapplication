@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
 
 
 
-const User = new mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
 
 //ye middleware har bar call hoga koi document save hone se pehle user collection mein
 User.pre("save" ,async function(next){

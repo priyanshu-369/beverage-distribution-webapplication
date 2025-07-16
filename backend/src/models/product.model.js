@@ -96,7 +96,7 @@ const productSchema = new mongoose.Schema(
 )
 
 
-const Product = new mongoose.model("Product", productSchema);
+const Product =  mongoose.model("Product", productSchema);
 
 
 Product.methods.getAvailableStockForSale = function(){
