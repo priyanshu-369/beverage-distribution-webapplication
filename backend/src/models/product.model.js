@@ -56,6 +56,16 @@ const productSchema = new mongoose.Schema(
         volumeUnit: {
             type: String // volume ya qunatity ka unit
         },
+        weight: {
+            type: Number,
+            min: 0,
+            default: 0,
+            required: true
+        },
+        weightUnit: {
+            type: String,
+            required: true
+        },
         packagingType: { 
             type: String, 
             enum: ['plastic Bottle', 'reusable can', 'glass bottle', 'carton', 'cardboard pack', 'shrink-wrapped bottles'] 
