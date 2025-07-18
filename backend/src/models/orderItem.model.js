@@ -44,7 +44,7 @@ const orderItemSchema = new mongoose.Schema(
             min: 0, 
             default: 0 
         }, 
-});
+},{timestamps: true});
 
 const OrderItem = mongoose.model("OrderItem",orderItemSchema);
 export default OrderItem;
