@@ -32,7 +32,7 @@ const deliveryHubSchema = new mongoose.Schema(
             type: Boolean, default: true
          } 
     },
-    { timestamps: true }
+    { timestamps: true   }
 );
 
 const DeliveryHub = mongoose.model("DeliveryHub", deliveryHubSchema);

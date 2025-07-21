@@ -76,24 +76,6 @@ const productSchema = new mongoose.Schema(
         powerConsumption: {
             type: String
         },
-        currentStockLevel: {
-            type: Number,
-            default: 0,
-            min: 0
-        },
-        reservedStockLevel: {
-            type: Number,
-            default: 0,
-            min: 0
-        },
-        minimumStockThreshold: {
-            type: Number, 
-            default: 0
-        },
-        reorderPoint: {
-            type: Number,
-            default: 0
-        },
         supplierId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Supplier",
@@ -110,20 +92,8 @@ const productSchema = new mongoose.Schema(
 
 productSchema.plugin(aggregatePaginate)
 
-productSchema.methods.getAvailableStockForSale = function(){
-    return this.currentStockLevel - this.reservedStockLevel;
-}
-
-productSchema.methods.isStockBelowReorderPoint = function(){
-    return  this.getAvailableStockForSale() <= this.reorderPoint
-}
-
 productSchema.methods.getFormattedPrice = function(){
     return `₹ ${this.basePrice}`
-}
-
-productSchema.methods.isSellable = function(){
-    return this.isAvailable && this.getAvailableStockForSale()
 }
 
 const Product =  mongoose.model("Product", productSchema);
