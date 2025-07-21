@@ -9,13 +9,20 @@ const inventorySchema = new mongoose.Schema(
             required: true,
             index: true
         },
-        changeType: {
+        locationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "DeliveryHub",
+            required: true,
+            index: true
+        },
+        stockMovementType: {
             type: String,
-            enum: ["inbound", "outbound", "adjustment", "return"], /*
-         `Inbound`: Stock received (e.g., from a supplier, new production).
-         `Outbound`: Stock dispatched (e.g., sold to a customer, consumed in production).
-         `Adjustment`: Manual correction to stock levels (e.g., after a physical count, correcting errors).
-         `Return`: Stock returned to inventory (e.g., customer return, supplier return).*/
+            enum: ["GOODS_RECEIPT",            // Stock received from external sources (supplier, production, initial stock)
+                "CUSTOMER_ORDER_FULFILLMENT", // Stock dispatched specifically for a customer order
+                "STOCK_ADJUSTMENT",         // Manual corrections (e.g., damage, discrepancy from physical count)
+                "CUSTOMER_RETURN",          // Stock returned by a customer and re-integrated
+                "INTER_HUB_TRANSFER_IN",    // Stock received from another hub or central warehouse
+                "INTER_HUB_TRANSFER_OUT"],
             required: true,
             index: true
         },
@@ -40,6 +47,11 @@ const inventorySchema = new mongoose.Schema(
         orderId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Order"
+        },
+        relatedLocationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "DeliveryHub",
+            sparse: true
         }
     },
     {timestamps:true
