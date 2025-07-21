@@ -89,7 +89,6 @@ const productSchema = new mongoose.Schema(
     ,{timestamps: true}
 )
 
-
 productSchema.plugin(aggregatePaginate)
 
 productSchema.methods.getFormattedPrice = function(){

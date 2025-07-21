@@ -58,14 +58,22 @@ const orderSchema = new mongoose.Schema(
         },
         orderStatus: {
             type: String,
-            enum: ["pending assignment", "assigned to batch (first mile)", "arrived at hub", "pending last-mile assignment", "assigned last-mile", "picked up (from hub)", "on the way", "delivered", "cancelled", "refunded"],
-            default: "pending assignment",
+            enum: ["pending fulfillment",     // Order placed, now determining fulfillment hub & stock
+                "assigned to hub",         // Hub identified, stock reserved
+                "processing at hub",       // Picking and packing at the hub
+                "picked up (from hub)",    // Last-mile partner has the order
+                "on the way",              // Last-mile partner en route
+                "delivered",               // Order delivered
+                "cancelled",
+                "refunded"],
+            default: "pending fulfillment",
             required: true
         },
-        deliveryBatchId: {
+        orderProcessingHubId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "DeliveryBatch",
-            index:true
+            ref: "DeliveryHub",
+            required: true,
+            index: true
         },
         assignedDeliveryPartner: {
             type: mongoose.Schema.Types.ObjectId,
@@ -93,11 +101,11 @@ const orderSchema = new mongoose.Schema(
              type: String 
         },
         identifiedDeliveryZoneId: { 
-            type: 'ObjectId', 
+            type: mongoose.Schema.Types.ObjectId, 
             ref: 'Zone' 
         },
         promotionCodeApplied: { 
-            type: String, 
+            type: mongoose.Schema.Types.ObjectId, 
             ref: 'Promotion' 
         },
         customerNotes: { 
