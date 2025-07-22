@@ -17,12 +17,14 @@ const inventorySchema = new mongoose.Schema(
         },
         stockMovementType: {
             type: String,
-            enum: ["GOODS_RECEIPT",            // Stock received from external sources (supplier, production, initial stock)
+            enum: [
+                "GOODS_RECEIPT",            // Stock received from external sources (supplier, production, initial stock)
                 "CUSTOMER_ORDER_FULFILLMENT", // Stock dispatched specifically for a customer order
                 "STOCK_ADJUSTMENT",         // Manual corrections (e.g., damage, discrepancy from physical count)
                 "CUSTOMER_RETURN",          // Stock returned by a customer and re-integrated
                 "INTER_HUB_TRANSFER_IN",    // Stock received from another hub or central warehouse
-                "INTER_HUB_TRANSFER_OUT"],
+                "INTER_HUB_TRANSFER_OUT"
+            ],
             required: true,
             index: true
         },

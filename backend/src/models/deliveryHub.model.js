@@ -15,6 +15,25 @@ const deliveryHubSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+         location: {
+            type: {
+                type: String,
+                enum: ['Point'],
+                default: "Point",
+                required: true
+            },
+            coordinates: { // [longitude, latitude] - REQUIRED for geospatial queries
+                type: [Number],
+                required: true,
+                index: '2dsphere' // Create a 2dsphere index for efficient geospatial queries
+            }
+        },
+        // --- ESSENTIAL ADDITION: Numerical radius defining the hub's immediate service range ---
+        operationalRadius: { // Radius in kilometers that this hub primarily serves customers
+            type: Number,
+            min: 0,
+            required: true
+        },
         servedZoneIds: [{ // List of Zones (from zone se) ye hub serve karega order ko
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Zone'

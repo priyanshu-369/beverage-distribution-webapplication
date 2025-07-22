@@ -21,14 +21,27 @@ const deliveryPartnerSchema = new mongoose.Schema(
         },
         vehicleType: {
             type: String,
-            enum: ["2 - wheeler", "4 - wheeler"],
+            enum: ["2-wheeler", "4-wheeler", "truck"],
             required: true,
             index: true
+        },
+        vehicleOwnershipType: {
+            type: String,
+            enum: ["company_owned", "partner_owned"],
+            required: true,
+            default: "partner_owned"
         },
         vehicleLoadCapacity: {
             type: Number,
             default: 0,
             required: true
+        },
+        employmentType: {
+            type: String,
+            enum: ["employee", "contractor"],
+            required: true,
+            default: "contractor",
+            index: true
         },
         currentLocation: { //geojson use karenge
             type: {
@@ -63,7 +76,7 @@ const deliveryPartnerSchema = new mongoose.Schema(
         ],
         currentStatus: {
             type: String,
-            enum: ["availabe", "on duty", "off duty", "break", "busy"],
+            enum: ["available", "on duty", "off duty", "break", "busy"],
             default:"off duty",
             required: true,
             index: true
@@ -80,11 +93,11 @@ const deliveryPartnerSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
-        totalDeliveryCompleted: {
+        totalDeliveriesCompleted: {
             type: Number,
             default: 0
         },
-        lastDeliveryCompletedTimeStamp: {
+        lastDeliveryCompletedTimestamp: {
             type: Date
         },
         isActive: {
@@ -94,6 +107,6 @@ const deliveryPartnerSchema = new mongoose.Schema(
     },
     {timestamps: true});
 
-
+ 
 const DeliveryPartner = mongoose.model("DeliveryPartner",deliveryPartnerSchema);
 export default DeliveryPartner;
