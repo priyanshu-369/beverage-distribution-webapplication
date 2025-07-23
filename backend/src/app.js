@@ -20,7 +20,7 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 import userRouter from "./routes/user.route.js"
-
+import productRouter from "./routes/product.route.js"
 
 app.use("/beverage/api/v1/auth", authRouter) // Dedicated authentication routes
 app.use("/beverage/api/v1/users", userRouter) // General user routes (including customers)

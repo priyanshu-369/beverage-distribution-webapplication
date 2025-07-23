@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema(
         category: {
             type: String,
             required: true,
-            enum: ["beverage", "machine", "accessory" ],
+            enum: ["beverage", "machine" ],
             default: "beverage"
         },
         subCategory: {
@@ -51,7 +51,9 @@ const productSchema = new mongoose.Schema(
             trim: true
         },
         volume: {
-            type: String // volume mean quantity(in ml l or other liquid units)
+            type: Number,// volume means quantity(in ml l or other liquid units)
+            default:0,
+            min:0 
         },
         volumeUnit: {
             type: String // volume ya qunatity ka unit
@@ -68,7 +70,7 @@ const productSchema = new mongoose.Schema(
         },
         packagingType: { 
             type: String, 
-            enum: ['plastic Bottle', 'reusable can', 'glass bottle', 'carton', 'cardboard pack', 'shrink-wrapped bottles'] 
+            enum: ['plastic bottle', 'reusable can', 'glass bottle', 'carton', 'cardboard pack', 'shrink-wrapped bottles'] 
         },
         capacity: {
             type: String,
@@ -83,7 +85,7 @@ const productSchema = new mongoose.Schema(
         },
         isAvailable: {
             type: Boolean,
-            default: false
+            default: true
         }
     }
     ,{timestamps: true}
