@@ -17,6 +17,9 @@ const uploadOnCloudinary = async(localFilesPath) => {
         })
         if(fileUploaded){
             fs.unlinkSync(localFilesPath)
+        }else{
+            fs.unlinkSync(localFilesPath)
+            console.log("Cloudinary upload did not return a URL despite no error.")
         }
         console.log("file uploaded: ",fileUploaded.url)
     } catch (error) {

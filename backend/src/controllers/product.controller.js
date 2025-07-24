@@ -2,8 +2,7 @@ import Product from "../models/product.model.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import ApiError from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
-
-
+import uploadOnCloudinary from "../utils/cloudinary.js"
 
 // way to register product only using category === machine
 // second way to register product only using category === beverage
@@ -82,6 +81,26 @@ const createNewProduct = asyncHandler( async(req, res) => {
     }else{
         throw new ApiError(400, "Invalid product category provided. ")
     }
+
+    const productImagesLocalPath = req.files?.productImage
+    if(!productImagesLocalPath && productImagesLocalPath.length === 0){
+        throw new ApiError(400, "at least product image required")
+    }
+
+    const uploadImagePromise = productImagesLocalPath.map( async(fileObject) => {
+        if(fileObject.path){
+            const imageUrl = await uploadOnCloudinary(fileObject.path)
+            if(!imageUrl){
+                throw new ApiError(500, `Failed to upload image ${fileObject.originalname}. try again later`)
+            }
+            return imageUrl;
+        }else{
+            throw new ApiError(500, "missing local path image")
+        }
+    })
+
+    const uploadedImagesUrl = await Promise.all(uploadImagePromise)
+    productObject.images = uploadedImagesUrl;
 
     const productInserted = await Product.create(productObject)
     if(!productInserted){
