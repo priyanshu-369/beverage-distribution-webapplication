@@ -112,6 +112,85 @@ const createNewProduct = asyncHandler( async(req, res) => {
 
 }) 
 
+// ye update karega product ke details ko product image ko update karne ka koi aur tarika hai
+const updateProductDetail = asyncHandler( async (req, res) => {
+    const { productId } = req.params;
+    const productExist = await Product.findById(productId)
+    if(!productExist){
+        throw new ApiError(404," product not found invalid product id. ")
+    }
+    const productCategory = productExist.category;
+
+    let updatedFields = {}
+    const { body } = req;
+
+    const commonUpdateableFields = ['name', 'description', 'basePrice', 'subCategory', 'brand', 'supplierId']
+
+    const machineSpecificUpdateableFields = ['capacity', 'powerConsumption', 'weight']
+    const beverageSpecificUpdateableFields = ['volume', 'volumeUnit', 'weight', 'weightUnit', 'packagingType']
+
+    const immutableFields = ["_id", "sku", "productCode", "category"]
+
+    for( let key in body){
+        if(body.hasOwnProperty(key)){
+            const value = body[key];
+
+            if(immutableFields.includes(key)) continue;
+            if(value === null || value === undefined) continue;
+            if(typeof value === "string" && value?.trim() === ""){
+                throw new ApiError(400,`invalid input : product ${key} is empty`)
+            }
+            if(typeof value === "number" && value < 0){
+                throw new ApiError(400,`invalid input : product ${key} can't be negative`)
+            }
+
+            if(commonUpdateableFields.includes(key)){
+                updatedFields[key] = value;
+            }else if(productCategory === "machine" && machineSpecificUpdateableFields.includes(key)){
+                updatedFields[key] = value;
+            }else if(productCategory === "beverage" && beverageSpecificUpdateableFields.includes(key)){
+                updatedFields[key] = value;
+            }else{
+                    console.warn(`Attempted to update unknown or disallowed field : ${key} for product ${productId}`)
+            }
+        }
+    }
+
+    if(Object.keys(updatedFields).length === 0){
+        throw new ApiError(400, "no fields provided for product update. ")
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+        productId,
+        {$set: updatedFields},
+        {new: true, runValidators: true}
+    );
+
+    if(!updatedProduct){
+        throw new ApiError(500,"internal error: failed to update the product")
+    }
+
+    return res.json(
+        new ApiResponse(200, updatedProduct, "product details updated successfully. ")
+    )
+})
+
+const deleteProductById = asyncHandler( async(req, res) =>{
+    const {productId} = req.params
+
+    const productExist = await Product.findById(productId);
+    if(!productExist){
+        throw new ApiError(404, "product not found. required valid product id to delete product. ")
+    }
+
+    const deleteProduct = await Product.findByIdAndDelete(productId)
+    if(!deleteProduct){
+        throw new ApiError(500," internal error: failed to delete product")
+    }
+    return res.json(
+        new ApiResponse(200, deleteProduct, "product deleted successfully")
+    )
+})
 // ye sara product list karega with query or whithout query
 const getAllProduct = asyncHandler( async(req, res) => {
     let query = req.query;
