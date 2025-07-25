@@ -114,7 +114,7 @@ const createNewProduct = asyncHandler( async(req, res) => {
 }) 
 
 // ye update karega product ke details ko product image ko update karne ka koi aur tarika hai
-const updateProductDetail = asyncHandler( async (req, res) => {
+const updateProductDetail = asyncHandler( async(req, res) => {
     const { productId } = req.params;
     const productExist = await Product.findById(productId)
     if(!productExist){
@@ -176,6 +176,64 @@ const updateProductDetail = asyncHandler( async (req, res) => {
     )
 })
 
+//yaha product image ko update hoga aur old image ko destroy karega
+const updateProductImage = asyncHandler( async(req, res) => {
+    const {productId} = req.params
+    if(!productId){
+        throw new ApiError(400,"product id field is empty")
+    }
+    const productExist = await Product.findById(productId)
+    if(!productExist){
+        throw new ApiError(404,"product not found")
+    }
+
+    const newProductImage = req.files.productImage
+    if(!newProductImage || newProductImage.length === 0){
+        throw new ApiError(400,"No new image is provided to update.")
+    }
+
+    const oldProductImage = productExist.images;
+
+    if(oldProductImage.length > 0){
+       
+        const deleteOldProductImage = oldProductImage.map( async(image) => {
+            if(!image || !image.url || !image.publicId){
+                console.warn("no image or image public id provided")
+                return {
+                    status: "failed",
+                    reason: "No public id provided"
+                }
+            }else{
+                return await destroyFromCloudinary(image.publicId)
+            }
+        })
+        await Promise.all(deleteOldProductImage)
+    }
+
+    const newProductImageUpload = newProductImage.map( async(image) => {
+        if(image.path){
+             return await uploadOnCloudinary(image.path) 
+        }else{
+            throw new ApiError(400,"file path not provided")
+        }
+    })
+
+    const imageUploaded = await  Promise.all(newProductImageUpload)
+    const newImageUploaded = await Product.findByIdAndUpdate(
+        productId,
+        {$set: {images: imageUploaded}},
+        {new: true, runValidators: true}
+    )
+
+    if(!newImageUploaded){
+        throw new ApiError(500,"failed to update product Image")
+    }
+    return res.json(
+        new ApiResponse(200, newImageUploaded, "successfully updated product image")
+    )
+})
+
+//yaha product ka document delete hoga aur clodinary ka image bhi
 const deleteProductById = asyncHandler( async(req, res) =>{
     const {productId} = req.params
 
@@ -202,6 +260,7 @@ const deleteProductById = asyncHandler( async(req, res) =>{
         new ApiResponse(200, deleteProduct, "product deleted successfully")
     )
 })
+
 // ye sara product list karega with query or whithout query
 const getAllProduct = asyncHandler( async(req, res) => {
     let query = req.query;
@@ -261,6 +320,7 @@ const getProductById = asyncHandler( async(req, res) => {
 export {
     createNewProduct,
     updateProductDetail,
+    updateProductImage,
     deleteProductById,
     getAllProduct,
     getProductById
