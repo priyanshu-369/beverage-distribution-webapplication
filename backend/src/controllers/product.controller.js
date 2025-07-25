@@ -264,19 +264,51 @@ const deleteProductById = asyncHandler( async(req, res) =>{
 // ye sara product list karega with query or whithout query
 const getAllProduct = asyncHandler( async(req, res) => {
     let query = req.query;
-    let filter = {}
+    let finalFilter = {}
     const limit = parseInt(query.limit) || 10
     const page = parseInt(query.page) || 1;
 
+    const searchTerm = req.query.search; 
+    if (searchTerm) {
+    const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const words = escapedSearchTerm.split(/\s+/).filter(Boolean);
+    const regexPattern = words.map(word => `(?=.*\\b${word}\\b)`).join('') + '.*'; 
+    const regex = new RegExp(regexPattern, 'i');
+
+    const searchConditions = [
+            { name: { $regex: regex } },
+            { description: { $regex: regex } },
+            { brand: { $regex: regex } },
+            { subCategory: { $regex: regex }}
+        ]
+    
+
+    finalFilter.$or = searchConditions;
+}
+    let specificFilters = {}    
     if(query && Object.keys(query).length > 0){ 
-        if(query.brand !== "" && query.brand) filter.brand = query.brand;
-        if(query.volume !== "" && query.volume) filter.volume = { $lte : parseInt(query.volume)};
+        if(query.brand !== "" && query.brand) specificFilters.brand = query.brand;
+        if(query.volume  && parseInt(query.volume) >= 0 && !isNaN(parseInt(query.volume)) ) specificFilters.volume = { $lte : parseInt(query.volume)};
     }
-    const totalProducts = await Product.countDocuments(filter)
+    const hasSearchTermFilter = Object.keys(finalFilter).includes('$or')
+    const hasSpecificFiltersApplied = Object.keys(specificFilters).length > 0
+
+     if (hasSearchTermFilter && hasSpecificFiltersApplied) {
+        finalFilter = {
+            $and: [
+                finalFilter, 
+                specificFilters
+            ]
+        }
+    } else if (hasSpecificFiltersApplied) {
+        finalFilter = specificFilters;
+    }
+
+    const totalProducts = await Product.countDocuments(finalFilter)
     const totalPages = Math.ceil(totalProducts / limit)
     const skip = ( page - 1 ) * limit
 
-    const productList = await Product.find(filter)
+    const productList = await Product.find(finalFilter)
             .limit(limit)
             .skip(skip)
             .select(" -supplierId ")
@@ -300,7 +332,7 @@ const getAllProduct = asyncHandler( async(req, res) => {
 //ye specific product ko usske id se find out karega
 const getProductById = asyncHandler( async(req, res) => {
     const productId = req.params.id
-    const  productInformation = Product.findById(productId)
+    const  productInformation = await Product.findById(productId)
         .select("-supplierId")
 
     if(!productInformation && productInformation === ""){
