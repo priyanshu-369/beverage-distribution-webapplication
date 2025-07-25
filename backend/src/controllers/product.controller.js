@@ -2,7 +2,8 @@ import Product from "../models/product.model.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import ApiError from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
-import uploadOnCloudinary from "../utils/cloudinary.js"
+import { uploadOnCloudinary,  destroyFromCloudinary } from "../utils/cloudinary.js"
+
 
 // way to register product only using category === machine
 // second way to register product only using category === beverage
@@ -89,13 +90,13 @@ const createNewProduct = asyncHandler( async(req, res) => {
 
     const uploadImagePromise = productImagesLocalPath.map( async(fileObject) => {
         if(fileObject.path){
-            const imageUrl = await uploadOnCloudinary(fileObject.path)
-            if(!imageUrl){
+            const imageUploadInformation = await uploadOnCloudinary(fileObject.path)
+            if(!imageUploadInformation || !imageUploadInformation.url || !imageUploadInformation.publicId){
                 throw new ApiError(500, `Failed to upload image ${fileObject.originalname}. try again later`)
             }
-            return imageUrl;
+            return imageUploadInformation;
         }else{
-            throw new ApiError(500, "missing local path image")
+            throw new ApiError(500, "missing local path of image")
         }
     })
 
@@ -183,6 +184,16 @@ const deleteProductById = asyncHandler( async(req, res) =>{
         throw new ApiError(404, "product not found. required valid product id to delete product. ")
     }
 
+    
+    const productImagesPublicId = productExist.images.map(image => image.publicId).filter(id => id) 
+
+    if(productImagesPublicId > 0){
+        const deleteImagePromise = productImagesPublicId.map( async(publicId) => {
+            return await destroyFromCloudinary(publicId)
+        });
+        await Promise.all(deleteImagePromise)
+    }
+
     const deleteProduct = await Product.findByIdAndDelete(productId)
     if(!deleteProduct){
         throw new ApiError(500," internal error: failed to delete product")
@@ -249,6 +260,8 @@ const getProductById = asyncHandler( async(req, res) => {
 
 export {
     createNewProduct,
+    updateProductDetail,
+    deleteProductById,
     getAllProduct,
     getProductById
 }

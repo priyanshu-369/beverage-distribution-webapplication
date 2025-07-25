@@ -17,6 +17,10 @@ const uploadOnCloudinary = async(localFilesPath) => {
         })
         if(fileUploaded){
             fs.unlinkSync(localFilesPath)
+            return {
+                url: fileUploaded.url,
+                publicId: fileUploaded.public_id
+            }
         }else{
             fs.unlinkSync(localFilesPath)
             console.log("Cloudinary upload did not return a URL despite no error.")
@@ -28,4 +32,25 @@ const uploadOnCloudinary = async(localFilesPath) => {
     }
 }
 
-export default uploadOnCloudinary;
+const destroyFromCloudinary = async(publicId) => {
+  try {
+      if(!publicId) return null;
+  
+      const destroyedFile = await cloudinary.uploader.destroy(publicId)
+      if(destroyedFile){
+        console.log(`destroyed file from cloudinary ${publicId}: ${destroyedFile.result}`)
+        return destroyedFile
+      }
+  } catch (error) {
+    console.error(`error destroying image with public id ${publicId}`)
+    return {
+        publicId,
+        status: "failed",
+        error: error.message
+    }
+  }
+}
+export { 
+    uploadOnCloudinary,
+    destroyFromCloudinary
+}

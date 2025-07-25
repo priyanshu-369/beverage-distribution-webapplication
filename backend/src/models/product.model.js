@@ -28,7 +28,19 @@ const productSchema = new mongoose.Schema(
             index: true
         },
         images: {
-            type: [String],
+            type: [
+                {
+                    url: { 
+                        type: String,
+                        required: true
+                    },
+                    publicId: {
+                        type: String,
+                        required: true
+                    }
+
+                }
+            ],
             default: []
         },
         basePrice: {
