@@ -95,6 +95,10 @@ const productSchema = new mongoose.Schema(
             ref: "Supplier",
             index: true
         },
+        isArchived: {
+            type: Boolean,
+            default: false 
+        },
         isAvailable: {
             type: Boolean,
             default: true

@@ -245,7 +245,7 @@ const deleteProductById = asyncHandler( async(req, res) =>{
     
     const productImagesPublicId = productExist.images.map(image => image.publicId).filter(id => id) 
 
-    if(productImagesPublicId > 0){
+    if(productImagesPublicId.length > 0){
         const deleteImagePromise = productImagesPublicId.map( async(publicId) => {
             return await destroyFromCloudinary(publicId)
         });
@@ -258,6 +258,36 @@ const deleteProductById = asyncHandler( async(req, res) =>{
     }
     return res.json(
         new ApiResponse(200, deleteProduct, "product deleted successfully")
+    )
+})
+
+// yaha product archived karenge aur unarchive karna hoga
+const toggleProductArchive = asyncHandler( async (req ,res) => {
+    const { productId } = req.params
+
+    const productExist = await Product.findById(productId);
+    if(!productExist){
+        throw new ApiError(404,"product not found. ")
+    }
+    const oldArchivedProduct = productExist.isArchived;
+    let toggleType
+    if(oldArchivedProduct === true){
+        toggleType = "unarchive";
+    }else{
+        toggleType = 'archive';
+    }
+
+    const archivedProduct = await Product.findByIdAndUpdate(
+        productId,
+        { $set: {isArchived: !oldArchivedProduct} },
+        {runValidators: false}
+    )
+    if(!archivedProduct){
+        throw new ApiError(500, `internal errorproduct ${toggleType} failed.`)
+    }
+
+    return res.json(
+        new ApiResponse(200, archivedProduct, `product succesfully ${toggleType}`)
     )
 })
 
