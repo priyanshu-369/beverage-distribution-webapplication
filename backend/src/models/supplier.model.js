@@ -39,7 +39,7 @@ const supplierSchema = new mongoose.Schema(
             enum: ["NET 15", "NET 30", "COD", "PREPAID"],
             required: true
         },
-        isActive: {
+        isArchived: {
             type: Boolean,
             default: true
         }

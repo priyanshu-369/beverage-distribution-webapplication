@@ -384,6 +384,7 @@ export {
     updateProductDetail,
     updateProductImage,
     deleteProductById,
+    toggleProductArchive,
     getAllProduct,
     getProductById
 }
