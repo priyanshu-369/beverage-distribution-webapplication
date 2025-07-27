@@ -98,7 +98,6 @@ if(Object.keys(updateSupplierFields).length === 0){
 })
 
 
-
 export {
     createNewSupplier,
     updateSupplierDetail

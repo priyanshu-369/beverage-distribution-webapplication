@@ -77,7 +77,7 @@ userSchema.methods.checkPassword = async function(password){
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
-            id:this.id,
+            _id:this.id,
             email:this.email,
             isActive: this.isActive
         },
@@ -91,7 +91,7 @@ userSchema.methods.generateAccessToken = function(){
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
-            id: this.id,
+            _id: this.id,
             email: this.email
         },
         process.env.REFRESH_TOKEN_SECRET,
