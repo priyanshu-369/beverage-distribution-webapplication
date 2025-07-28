@@ -41,7 +41,7 @@ const supplierSchema = new mongoose.Schema(
         },
         isArchived: {
             type: Boolean,
-            default: true
+            default: false
         }
 
     },

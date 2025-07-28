@@ -5,6 +5,11 @@ import ApiResponse from "../utils/ApiResponse";
 
 
 const createNewSupplier = asyncHandler( async (req, res) => {
+    const {userRole} = req.user;
+    if(!["admin", "staff"].includes(userRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
     const {name, contactPerson, email, phoneNumber, address, leadTimeDays, paymentTerms, isArchived} = req.body;
     const checkSupplierExist = await Supplier.findOne({$or:[{email: email}, {name: name}]})
     if(checkSupplierExist){
@@ -48,6 +53,11 @@ const createNewSupplier = asyncHandler( async (req, res) => {
 })
 
 const updateSupplierDetail = asyncHandler( async(req, res) => {
+    const {userRole} = req.user;
+    if(!["admin", "staff"].includes(userRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
     const {supplierId} = req.params;
     const {body} = req;
     const checkSupplierExist = await Supplier.findById(supplierId)
@@ -97,8 +107,126 @@ if(Object.keys(updateSupplierFields).length === 0){
     )
 })
 
+const toggleSupplierArchive = asyncHandler( async(req, res) => {
+    const {userRole} = req.user;
+    if(!["admin", "staff"].includes(userRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
+    const {supplierId} = req.params
+    const checkSupplierExist = await Supplier.findById(supplierId)
+    if(!checkSupplierExist){
+        throw new ApiError(404, "Supplier not found. ")
+    }
+    let toggleArchiveStatus;
+    const previousArchiveStatus = checkSupplierExist.isArchived 
+    const newArchiveStatus = !previousArchiveStatus
+    if(userRole === "admin"){   
+        if(previousArchiveStatus === true){
+            toggleArchiveStatus = "unarchive"
+        }else{
+            toggleArchiveStatus = "archive"
+        }
+    }else if(userRole === "staff" && previousArchiveStatus === false){
+        toggleArchiveStatus = "archive"
+    }else{
+        throw new ApiError(403, "user is not allowed to access resource. ")
+    }
+    const updateSupplierArchive = await Supplier.findByIdAndUpdate(
+        supplierId, 
+        {$set : {isArchived : newArchiveStatus}},
+        {runValidators: false}
+    )
+    if(!updateSupplierArchive){
+        throw new ApiError(500, `Internal Error failed to ${toggleArchiveStatus} supplier.`)
+    }
+    return res.json(
+        new ApiResponse(200, updateSupplierArchive, `supplier ${toggleArchiveStatus}d successfully.`)
+    )
+})
+
+const getSupplierById = asyncHandler( async(req, res) => {
+    const {userRole} = req.user;
+    if(!["admin", "staff"].includes(userRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
+    const {supplierId} = req.params
+    const checkSupplierExist = await Supplier.findById(supplierId)
+    if(!checkSupplierExist){
+        throw new ApiError(404, "Supplier not found. ")
+    }
+    return res.json(
+        new ApiResponse(200, checkSupplierExist, "supplier fetched successfully. ")
+    )
+})
+
+const getAllSupplier = asyncHandler( async(req, res) => {
+    const {userRole} = req.user;
+    if(!["admin", "staff"].includes(userRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
+    const query = req.query;
+    let finalFilter = {};
+    const limit = parseInt(query.limit) || 10;
+    const page = parseInt(query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const conditions = [];
+
+    if (query.isArchived === 'true') { 
+    } else {
+        conditions.push({ isArchived: false }); 
+    }
+
+    const searchTerm = query.search;
+    if (searchTerm) {
+        const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const words = escapedSearchTerm.split(/\s+/).filter(Boolean);
+        const regexPattern = words.map(word => `(?=.*\\b${word}\\b)`).join('') + '.*';
+        const regex = new RegExp(regexPattern, 'i');
+
+        const searchConditions = [
+            { name: { $regex: regex } },
+            { email: { $regex: regex } },
+            { contactPerson: { $regex: regex } },
+            { phoneNumber: { $regex: regex } }
+        ];
+        conditions.push({ $or: searchConditions });
+    }
+
+    if (conditions.length > 0) {
+        finalFilter = { $and: conditions };
+    } else {
+        finalFilter = {};
+    }
+
+    const totalSuppliers = await Supplier.countDocuments(finalFilter);
+    const totalPages = Math.ceil(totalSuppliers / limit);
+
+    const supplierList = await Supplier.find(finalFilter)
+        .limit(limit)
+        .skip(skip)
+        .exec(); 
+
+    const supplierDetail = {
+        suppliers: supplierList,
+        totalSuppliers: totalSuppliers,
+        totalPages: totalPages,
+        currentPage: page,
+        limit: limit
+    };
+
+    return res.json(
+        new ApiResponse(200, supplierDetail, "Suppliers data fetched successfully.")
+    );
+});
 
 export {
     createNewSupplier,
-    updateSupplierDetail
+    updateSupplierDetail,
+    toggleSupplierArchive,
+    getSupplierById,
+    getAllSupplier
 }
