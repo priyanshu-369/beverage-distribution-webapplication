@@ -35,7 +35,7 @@ const hubInventorySchema = new mongoose.Schema(
             type: Date
         }
 
-        // You might add fields like `lastInventoryUpdate` for auditing, though timestamps handle this too.
+        // i may add fields like `lastInventoryUpdate` for auditing, though timestamps handle this too.
         // Or `reorderPoint`, `maxStockLevel` for inventory management logic.
     },
     { timestamps: true }

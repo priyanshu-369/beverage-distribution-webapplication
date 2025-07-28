@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
-export const verifyJWT = (userRole) => {
+export const verifyJWT = (allowedRoles) => {
 
     return asyncHandler(async (req, res, next) => {
         try {
@@ -19,8 +19,8 @@ export const verifyJWT = (userRole) => {
             if (!user) {
                 throw new ApiError(401, "Invalid authentication token: User not found.");
             }
-
-            if (user.role === userRole) {
+            const roleToCheck = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+            if (roleToCheck.includes(user.role)) {
                 req.user = user;
                 next();
             } else {

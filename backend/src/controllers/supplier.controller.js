@@ -1,7 +1,7 @@
-import ApiError from "../utils/ApiError";
-import asyncHandler from "../utils/asyncHandler";
+import ApiError from "../utils/ApiError.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import Supplier from "../models/supplier.model.js"
-import ApiResponse from "../utils/ApiResponse";
+import ApiResponse from "../utils/ApiResponse.js";
 
 
 const createNewSupplier = asyncHandler( async (req, res) => {

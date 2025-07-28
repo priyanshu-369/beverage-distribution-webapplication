@@ -21,10 +21,12 @@ app.use(cookieParser())
 
 import userRouter from "./routes/user.route.js"
 import productRouter from "./routes/product.route.js"
+import supplierRouter from "./routes/supplier.route.js"
 
 app.use("/beverage/api/v1/auth", authRouter) // Dedicated authentication routes
 app.use("/beverage/api/v1/users", userRouter) // General user routes (including customers)
 app.use("/beverage/api/v1/products", productRouter)
+app.use("/beverage/api/v1/suppliers", supplierRouter)
 app.use("/beverage/api/v1/orders", orderRouter)
 app.use("/beverage/api/v1/hubs", hubRouter)
 app.use("/beverage/api/v1/hub-inventory", hubInventoryRouter)
