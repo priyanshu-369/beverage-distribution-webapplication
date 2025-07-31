@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import aggregatePaginate from "mongoose-aggregate-paginate-v2"
 
-const inventorySchema = new mongoose.Schema(
+const inventoryLogSchema = new mongoose.Schema(
     {
         productId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -62,5 +62,5 @@ const inventorySchema = new mongoose.Schema(
 
 
 inventorySchema.plugin(aggregatePaginate)
-const InventoryLog = mongoose.model("InventoryLog", inventorySchema)
+const InventoryLog = mongoose.model("InventoryLog", inventoryLogSchema)
 export default InventoryLog;

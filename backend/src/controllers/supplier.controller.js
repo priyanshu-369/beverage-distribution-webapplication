@@ -5,8 +5,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 
 const createNewSupplier = asyncHandler( async (req, res) => {
-    const {userRole} = req.user;
-    if(!["admin", "staff"].includes(userRole)){
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
         throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
     }
 
@@ -53,8 +53,8 @@ const createNewSupplier = asyncHandler( async (req, res) => {
 })
 
 const updateSupplierDetail = asyncHandler( async(req, res) => {
-    const {userRole} = req.user;
-    if(!["admin", "staff"].includes(userRole)){
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
         throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
     }
 
@@ -108,8 +108,8 @@ if(Object.keys(updateSupplierFields).length === 0){
 })
 
 const toggleSupplierArchive = asyncHandler( async(req, res) => {
-    const {userRole} = req.user;
-    if(!["admin", "staff"].includes(userRole)){
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
         throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
     }
 
@@ -146,8 +146,8 @@ const toggleSupplierArchive = asyncHandler( async(req, res) => {
 })
 
 const getSupplierById = asyncHandler( async(req, res) => {
-    const {userRole} = req.user;
-    if(!["admin", "staff"].includes(userRole)){
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
         throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
     }
 
@@ -162,8 +162,8 @@ const getSupplierById = asyncHandler( async(req, res) => {
 })
 
 const getAllSupplier = asyncHandler( async(req, res) => {
-    const {userRole} = req.user;
-    if(!["admin", "staff"].includes(userRole)){
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
         throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
     }
 
