@@ -14,7 +14,7 @@ const initializeHubInventory = asyncHandler( async(req, res) => {
     const { productId, hubId, initialStockLevel , reservedStockLevel = 0, reorderPoint = 0, lastRestockRequestDate} = req.body;
     let inventoryObejct = {};
     
-    if(productId || hubId || initialStockLevel === undefined || initialStockLevel === null ){
+    if(!productId || !hubId || initialStockLevel === undefined || initialStockLevel === null ){
         throw new ApiError(400, "Product ID,  Hub ID, & initial stock level are required.")
     }
 
@@ -62,17 +62,64 @@ const initializeHubInventory = asyncHandler( async(req, res) => {
         staffUserId: req.user._id,
         reason: "Initial inventory setup for new product/hub combination."
     });
-    if(!newHubInventory){
-        throw new ApiError(500, ":Internal error: Failed to create inventory log. ")
-    }
 
     return res.json(
         new ApiResponse(201, newHubInventory, "Initial hub inventory created successfully.")
     )
 })
 
+const adjustHubStock = asyncHandler( async( req, res) => {
+    const {role: authorizedRole} = req.user;
+    if(!["admin", "staff"].includes(authorizedRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.")
+    }
+
+    const { productId, hubId, quantityChange, stockMovementType, reason } = req.body;
+
+    if (!productId || !hubId || quantityChange === undefined || quantityChange === null || !stockMovementType) {
+        throw new ApiError(400, "Product ID, Hub ID, quantity change, and stock movement type are required.");
+    }
+    if (typeof quantityChange !== 'number' || quantityChange === 0) {
+        throw new ApiError(400, "Quantity change must be a non-zero number.");
+    }
+    
+    const hubInventoryEntry = await HubInventory.findOne({ productId, hubId });
+    if(!hubInventoryEntry){
+        throw new ApiError(404,"Inventory record not found for this product at this hub. Please initialize it first.")
+    }
+
+    const newCurrentStockLevel = hubInventoryEntry.currentStockLevel + quantityChange;
+    if (newCurrentStockLevel < 0) {
+        throw new ApiError(400, `Insufficient stock: Cannot decrease stock by ${Math.abs(quantityChange)}. Current stock is ${hubInventoryEntry.currentStockLevel}.`);
+    }
+
+    const updatedHubInventory = await HubInventory.findByIdAndUpdate(
+        hubInventoryEntry._id,
+        {$inc: {currentStockLevel: quantityChange}},
+        {new: true, runValidators: true}
+    )
+
+    if (!updatedHubInventory) {
+        throw new ApiError(500, "Internal Server Error: Failed to update hub inventory stock.");
+    }
+
+    const updatedInventoryLogGenerated = await InventoryLog.create({
+        productId: updatedHubInventory.productId,
+        locationId: updatedHubInventory.hubId,
+        stockMovementType: stockMovementType, 
+        quantityChange: quantityChange,
+        newStockLevel: updatedHubInventory.currentStockLevel, 
+        staffUserId: req.user._id, 
+        reason: reason || `Stock adjusted by ${quantityChange}` 
+    });
+
+    return res.json(
+        new ApiResponse(202,updatedHubInventory, "product status updated in hub Inventory. ")
+    )
+})
 
 
 export {
     initializeHubInventory,
+    adjustHubStock
 }
