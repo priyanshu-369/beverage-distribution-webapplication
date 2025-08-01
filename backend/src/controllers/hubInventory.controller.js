@@ -5,6 +5,7 @@ import Product from "../models/product.model.js"
 import DeliveryHub from "../models/deliveryHub.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import InventoryLog from "../models/inventory.model.js";
+import mongoose from "mongoose";
 
 const initializeHubInventory = asyncHandler( async(req, res) => {
     const {role: authorizedRole}  = req.user;
@@ -118,6 +119,123 @@ const adjustHubStock = asyncHandler( async( req, res) => {
     )
 })
 
+const getHubInventoryLevel = asyncHandler(async(req, res) => {
+    const {role: authorizedRole} = req.user;
+    if(!["admin","staff"].includes(authorizedRole)){
+        throw new ApiError(403, "Access Forbidden: You do not have the required permissions.");
+    }
+
+    const {page = 1, limit = 10, hubId, hubName, search, lowStockOnly } = req.query
+    const pipeline = []
+
+    if(search){
+        pipeline.push({
+            $lookup: {
+                from: "products",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product"
+            }
+        });
+        pipeline.push({
+            $unwind: "$product"
+        });
+        pipeline.push({
+            $match: {
+                "product.name": {
+                    $regex: new RegExp(search, "i")
+                }
+            }
+        })
+    }
+
+     if (!search) {
+        // so ye ulta run karega jab koi search parameter nahi diya hoga tab.
+        pipeline.push({
+            $lookup: {
+                from: "products",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product"
+            }
+        });
+        pipeline.push({
+            $unwind: "$product"
+        });
+    }
+
+    pipeline.push({
+        $lookup: {
+            from: "deliveryhubs",
+            localField: "hubId",
+            foreignField: "_id",
+            as: "hub"
+        }
+    })
+    pipeline.push({
+        $unwind: "$hub"
+    })
+
+    const finalMatchStage = {}
+    if(hubId){
+        finalMatchStage.hubId = new mongoose.ObjectId(hubId); 
+    }else if(hubName){
+        const hub = await DeliveryHub.findOne({name: {$regex: new RegExp(hubName, "i")}})
+        if(hub){
+            finalMatchStage.hubId = hub._id
+        }else{
+             return res.json(
+                new ApiResponse(200, { docs: [], totalDocs: 0, limit, page }, "No inventory found for the specified hub.")
+            );
+        }
+    }
+    if (lowStockOnly === 'true') {
+        finalMatchStage.$expr = { $lte: ["$currentStockLevel", "$reorderPoint"] };
+    }
+    
+    if (Object.keys(finalMatchStage).length > 0) {
+        pipeline.push({ $match: finalMatchStage });
+    }
+
+     pipeline.push({
+        $project: {
+            _id: 1,
+            product: { _id: "$product._id", name: "$product.name", unit: "$product.unit" },
+            hub: { _id: "$hub._id", name: "$hub.name" },
+            currentStockLevel: 1,
+            reservedStockLevel: 1,
+            reorderPoint: 1,
+            lastRestockRequestDate: 1,
+            createdAt: 1,
+            updatedAt: 1
+        }
+    });
+
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        customLabels: {
+            docs: 'inventoryRecords' // Custom label for the documents array
+        }
+    };
+    
+    const hubInventoryRecords = await HubInventory.aggregatePaginate(HubInventory.aggregate(pipeline), options);
+
+    if (hubInventoryRecords.inventoryRecords.length === 0) {
+        return res.status(200).json(
+            new ApiResponse(200, hubInventoryRecords, "No inventory records found matching the criteria.")
+        );
+    }
+    
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            hubInventoryRecords, 
+            "Hub inventory levels retrieved successfully."
+        )
+    );
+
+})
 
 export {
     initializeHubInventory,
