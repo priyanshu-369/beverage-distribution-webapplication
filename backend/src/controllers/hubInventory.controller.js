@@ -215,7 +215,7 @@ const getHubInventoryLevel = asyncHandler(async(req, res) => {
         page: parseInt(page, 10),
         limit: parseInt(limit, 10),
         customLabels: {
-            docs: 'inventoryRecords' // Custom label for the documents array
+            docs: 'inventoryRecords' // ye Custom label  documents array ke liye
         }
     };
     
@@ -239,5 +239,6 @@ const getHubInventoryLevel = asyncHandler(async(req, res) => {
 
 export {
     initializeHubInventory,
-    adjustHubStock
+    adjustHubStock,
+    getHubInventoryLevel
 }
