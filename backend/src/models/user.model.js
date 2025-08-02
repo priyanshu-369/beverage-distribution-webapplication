@@ -53,6 +53,16 @@ const userSchema = new mongoose.Schema(
         },
         refreshToken: {
             type: String
+        },
+        passwordReset: {
+          token: {
+            type: String,
+            select: false
+          },
+          expiry: {
+            type: Date,
+            select: false
+          }
         }
     },
     {

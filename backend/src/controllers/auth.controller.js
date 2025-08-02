@@ -9,6 +9,14 @@ import crypto from "crypto"
 
 
 
+ const generateOtp = () => {
+    return crypto.randomInt(10000, 99999).toString();
+}
+
+const generatePasswordResetToken = () => {
+    return crypto.randomBytes(32).toString('hex');
+}
+
 const generateProfileImageUrl = function(fullName) {
   if (typeof fullName !== 'string' || !fullName.trim()) {
     throw new Error('Invalid full name');
@@ -29,6 +37,7 @@ const generateProfileImageUrl = function(fullName) {
   } while ((parseInt(backgroundColor.substring(0, 2), 16) * 299 + parseInt(backgroundColor.substring(2, 4), 16) * 587 + parseInt(backgroundColor.substring(4, 6), 16) * 114) / 1000 < 128);
   return `https://ui-avatars.com/api/?name=${formattedName}&bold=true&size=128&background=${backgroundColor}&color=000000`;
 }
+
 // method to generate the accesstoken and the refresh token
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
@@ -175,11 +184,6 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, null, "User logged out successfully!"));
 });
 
-  // Function to generate OTP using date-time randomness
- const generateOtp = () => {
-    return crypto.randomInt(10000, 99999).toString();
-};
-  
   // Send OTP and store in Redis
   const verifyUserSendOtp = asyncHandler(async (req, res) => {
     const { contact } = req.body;
@@ -231,9 +235,48 @@ const verifyOtp = asyncHandler(async (req, res) => {
     // Delete OTP from Redis after successful verification
     await redis.del(`otp:${contact}`);
 
-    return res.status(200).json(new ApiResponse(200, {status: "verified", success: true}, "OTP validated."));
+    const user = await User.findOne({
+        $or: [{ email: contact }, { phone: contact }]
+    });
+    if(!user) {
+        throw new ApiError(404, "User not found after OTP verification.");
+    }
+
+    const passwordResetToken = generatePasswordResetToken();
+    // Now we update the nested object
+    user.passwordReset = {
+      token: passwordResetToken,
+      expiry: Date.now() + 10 * 60 * 1000 // Token expires hoga 10 minutes
+    }
+    await user.save()
+    return res.status(200).json(new ApiResponse(200, {passwordResetToken, success: true}, "OTP validated."));
   });
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { resetPasswordToken , newPassword } = req.body;
+    if(!resetPasswordToken || resetPasswordToken.trim() === ""){
+      throw new ApiError(403, "User unauthorized to change password. ")
+    }
+
+    if(newPassword === null  || newPassword.trim() === ""|| !newPassword){
+      throw new ApiError(403, "Provide with new password . ")
+    }
   
+    const user = await User.findOne({
+      "passwordReset.token" : resetPasswordToken,
+      "passwordReset.expiry": { $gt : Date.now()}
+     }).select('+passwordReset.token +passwordReset.expiry')
+    
+    if (!user) {
+      throw new ApiError(400, "Invalid password reset token. ");
+    }
+
+    user.password = newPassword;
+    user.passwordReset = undefined;
+    await user.save();
+
+    return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully."));
+  });
 
   
 export  {
@@ -242,5 +285,6 @@ export  {
     logoutUser,
     generateOtp,
     verifyUserSendOtp,
-    verifyOtp
+    verifyOtp,
+    resetPassword
 }

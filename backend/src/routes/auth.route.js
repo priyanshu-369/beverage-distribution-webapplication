@@ -10,7 +10,7 @@ router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 
 //yaha se direct logout hoga
-router.route("/logout").post(verifyJWT(["admin", "staff", "customer", "driver"]), logoutUser)
+router.route("/logout").patch(verifyJWT(["admin", "staff", "customer", "driver"]), logoutUser)
 
 // yaha se forget password to reset pass word ke liye mail ke throught otp send karenge
 router.route("/forgot-password/send-otp").post(verifyUserSendOtp)
@@ -19,5 +19,6 @@ router.route("/forgot-password/send-otp").post(verifyUserSendOtp)
 router.route("/forgot-password/verify-otp").post(verifyOtp)
 
 //yaha password reset hoga
-router.route("/reset-password").post(resetPassword)
+router.route("/reset-password").patch(resetPassword)
+
 export default router
